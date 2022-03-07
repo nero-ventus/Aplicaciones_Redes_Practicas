@@ -26,10 +26,11 @@ public class Servidor {
                 
                 while(opc != 0){
                     opc = aux.recibirRespuesta(c1, dis, relative_path, dos);
+                    
                     if(opc == 1){
                         aux.recibirArchivosServidor(c1, dis);
                     }
-                    opc = 2;
+                    
                 }
                 
                 c1.close();

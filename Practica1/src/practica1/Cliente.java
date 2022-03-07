@@ -22,29 +22,15 @@ public class Cliente {
             while(opcion != 0){
                 
                 opcion = aux.menu(c1, dis);
-                dos.write(opcion);
+                dos.writeInt(opcion);
+                dos.flush();
                 
                 if(opcion == 1){
-                    JFileChooser jfc = new JFileChooser();
-            
-                    jfc.setCurrentDirectory(new File(aux.pathActualCliente()));
-                    jfc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-                    jfc.setMultiSelectionEnabled(true);
-                    jfc.getActionMap().get("viewTypeDetails").actionPerformed(null);
-                    int r = jfc.showOpenDialog(null);
-                    jfc.setRequestFocusEnabled(true);
-                    
-                    if(r == JFileChooser.APPROVE_OPTION){
-                        File[] container = jfc.getSelectedFiles();
-                        aux.mandarArchivosCliente(c1, dos, aux.getAllFiles(container), container[0].getParent());
-                    }
-                    
+                    aux.mandarArchivosCliente(c1, dos);
                 }
                 else if(opcion != 0){
                     
                 }
-                
-                opcion = 0;
             }
             
             dos.close();

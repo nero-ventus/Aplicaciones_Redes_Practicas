@@ -11,7 +11,30 @@ public class ServidorHelper {
         File f = new File("");
         return f.getAbsolutePath() + "\\Archivos_Servidor\\";
     }
-    
+    int recibirRespuesta(Socket c1, DataInputStream dis, String relative_path, DataOutputStream dos){
+        File auxiliar = new File(pathActualServidor() + relative_path);
+        File[] listaArchivos = auxiliar.listFiles();
+
+        String menu ="Seleccione una opcion \n Opcion 1: Subir archivos \n";
+
+        for(int i=2; i<listaArchivos.length+2; i++){
+             menu+="Opcion "+i+": "+listaArchivos[i].getName()+ "\n";
+        }
+
+        int opc = 0;
+        try{
+            dos.writeUTF(menu);
+            dos.flush();
+       
+            opc = dis.readInt();
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+ 
+        return opc;
+    }
+
     void recibirArchivosServidor(Socket c1, DataInputStream dis){
         
         try{

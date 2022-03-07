@@ -21,8 +21,8 @@ public class Cliente {
             
             while(opcion != 0){
                 
-                //opcion = aux.menu(c1, dis);
-                //dos.write(opcion);
+                opcion = aux.menu(c1, dis);
+                dos.write(opcion);
                 
                 if(opcion == 1){
                     JFileChooser jfc = new JFileChooser();

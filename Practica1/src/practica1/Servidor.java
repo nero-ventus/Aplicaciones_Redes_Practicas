@@ -1,6 +1,7 @@
 package practica1;
 
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -16,6 +17,7 @@ public class Servidor {
                 Socket c1 = ss.accept();
                 c1.setTcpNoDelay(true);
                 DataInputStream dis = new DataInputStream(c1.getInputStream());
+                DataOutputStream dos = new DataOutputStream(c1.getOutputStream());
                 System.out.println("Cliente conectado desde " + c1.getInetAddress() + ":" + c1.getPort());
                 
                 ServidorHelper aux = new ServidorHelper();
@@ -23,12 +25,11 @@ public class Servidor {
                 String relative_path = "";
                 
                 while(opc != 0){
-
+                    opc = aux.recibirRespuesta(c1, dis, relative_path, dos);
                     if(opc == 1){
                         aux.recibirArchivosServidor(c1, dis);
                     }
-
-                    opc = 0;
+                    opc = 2;
                 }
                 
                 c1.close();

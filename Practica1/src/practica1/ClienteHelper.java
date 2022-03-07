@@ -1,9 +1,11 @@
 package practica1;
 
+import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -51,15 +53,15 @@ public class ClienteHelper {
         int opc = -1;
 
         try {
-            Scanner sc = new Scanner(System.in);
 
             String menu = dis.readUTF();
             System.out.println(menu);
 
-            opc = Integer.parseInt(sc.nextLine());
+            BufferedReader br = new BufferedReader(new InputStreamReader(System.in,"ISO-8859-1"));//"Windows-1250"
+            opc = br.read();
         }
         catch(Exception e){
-            return menu(c1, dis);
+            //return menu(c1, dis);
         }
 
         return opc;

@@ -43,11 +43,11 @@ public class ServidorHelper {
         return opc;
     }
 
-    void recibirArchivosServidor(Socket c1, DataInputStream dis){
+    void recibirArchivosServidor(Socket c1, DataInputStream dis, String relative_path_server){
         
         try{
             int left = 0;
-            String path = pathActualServidor();
+            String path = pathActualServidor() + relative_path_server;
             File carpeta = new File(path);
             carpeta.mkdirs();
             carpeta.setWritable(true);

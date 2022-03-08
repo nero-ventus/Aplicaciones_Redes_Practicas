@@ -28,12 +28,33 @@ public class Servidor {
                     opc = aux.recibirRespuesta(c1, dis, relative_path, dos);
                     
                     if(opc == 1){
-                        aux.recibirArchivosServidor(c1, dis);
+                        aux.recibirArchivosServidor(c1, dis, relative_path);
                     }
                     else if(opc != 0){
                         relative_path = aux.darOpciones(opc, relative_path, dis, dos);
                     }
-                    
+                    else if(opc == 0){
+                        
+                        if(!relative_path.equals("")){
+                            int conta = 1;
+                            
+                            for(int i = relative_path.length() - 2; i >= 0; i--){
+                                if(relative_path.charAt(i) == 92){
+                                    break;
+                                }
+                                conta++;
+                            }
+                            
+                            //System.out.println(relative_path.length() + " " + conta);
+                            
+                            relative_path = relative_path.substring(0, relative_path.length() - conta);
+                            
+                            opc = 1;
+                        }
+                        
+                        dos.writeInt(opc);
+                        dos.flush();
+                    }
                 }
                 
                 c1.close();
@@ -41,6 +62,7 @@ public class Servidor {
         }
         catch(Exception e){
             System.out.println(e.getMessage());
+            e.printStackTrace();
         }
     }
 }

@@ -31,6 +31,9 @@ public class Cliente {
                 else if(opcion != 0){
                     aux.recibirOpciones(dis, dos);
                 }
+                else if(opcion == 0){
+                    opcion = dis.readInt();
+                }
             }
             
             dos.close();

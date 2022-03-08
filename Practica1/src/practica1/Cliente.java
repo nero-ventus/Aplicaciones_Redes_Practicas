@@ -29,7 +29,7 @@ public class Cliente {
                     aux.mandarArchivosCliente(c1, dos);
                 }
                 else if(opcion != 0){
-                    
+                    aux.recibirOpciones(dis, dos);
                 }
             }
             

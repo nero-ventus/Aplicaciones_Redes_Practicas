@@ -30,6 +30,9 @@ public class Servidor {
                     if(opc == 1){
                         aux.recibirArchivosServidor(c1, dis);
                     }
+                    else if(opc != 0){
+                        relative_path = aux.darOpciones(opc, relative_path, dis, dos);
+                    }
                     
                 }
                 

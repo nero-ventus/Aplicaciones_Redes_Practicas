@@ -1,12 +1,10 @@
 package practica1;
 
-import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -72,132 +70,152 @@ public class ClienteHelper {
         return opc;
     }
     
-    void mandarArchivosCliente(Socket c1, DataOutputStream dos){
-        
-        JFileChooser jfc = new JFileChooser();
-                    
-        jfc.setCurrentDirectory(new File(pathActualCliente()));
-        jfc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-        jfc.setMultiSelectionEnabled(true);
-        jfc.getActionMap().get("viewTypeDetails").actionPerformed(null);
-        System.out.println("A4644");
-        int r = jfc.showOpenDialog(null);
-        System.out.println("A4644");
-        jfc.setRequestFocusEnabled(true);
+    void mandarArchivosCliente(){
 
-        if(r == JFileChooser.APPROVE_OPTION){
-            File[] container = jfc.getSelectedFiles();
-            
-            File[] fs = getAllFiles(jfc.getSelectedFiles());
-
-            String parent_path = jfc.getSelectedFiles()[0].getParent();
-
-            if(fs == null)
-                return;
+        try{
+            Socket c = new Socket("localhost", 1235);
+            DataOutputStream dos = new DataOutputStream(c.getOutputStream());
 
             try{
-                for(int i = 0; i <fs.length; i++){
-                    File current_f = fs[i];
+                JFileChooser jfc = new JFileChooser();
 
-                    String name = current_f.getName();
-                    long tam = current_f.length();
+                jfc.setCurrentDirectory(new File(pathActualCliente()));
+                jfc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+                jfc.setMultiSelectionEnabled(true);
+                jfc.getActionMap().get("viewTypeDetails").actionPerformed(null);
+                System.out.println("A4644");
+                int r = jfc.showOpenDialog(null);
+                System.out.println("A4644");
+                jfc.setRequestFocusEnabled(true);
 
-                    System.out.println("Se enviara el archivo " + name + " de " + tam + "bytes");
+                if(r == JFileChooser.APPROVE_OPTION){
+                    File[] container = jfc.getSelectedFiles();
 
-                    DataInputStream dis = new DataInputStream(new FileInputStream(current_f));
+                    File[] fs = getAllFiles(jfc.getSelectedFiles());
 
-                    String path = current_f.getAbsolutePath();
-                    String base = parent_path;
-                    String relative = new File(base).toURI().relativize(new File(path).toURI()).getPath();
+                    String parent_path = jfc.getSelectedFiles()[0].getParent();
 
-                    dos.writeInt(fs.length - i);
-                    dos.flush();
-                    dos.writeUTF(relative);
-                    dos.flush();
-                    dos.writeLong(tam);
-                    dos.flush();
+                    if(fs == null)
+                        return;
 
-                    long sent = 0;
+                    for(int i = 0; i <fs.length; i++){
+                        File current_f = fs[i];
 
-                    while(sent < tam){
-                        byte[] b = new byte[1500];
+                        String name = current_f.getName();
+                        long tam = current_f.length();
 
-                        int read = dis.read(b);
+                        System.out.println("Se enviara el archivo " + name + " de " + tam + "bytes");
 
-                        System.out.println("Enviados: " + read);
+                        DataInputStream dis = new DataInputStream(new FileInputStream(current_f));
 
-                        dos.write(b, 0, read);
+                        String path = current_f.getAbsolutePath();
+                        String base = parent_path;
+                        String relative = new File(base).toURI().relativize(new File(path).toURI()).getPath();
+
+                        dos.writeInt(fs.length - i);
+                        dos.flush();
+                        dos.writeUTF(relative);
+                        dos.flush();
+                        dos.writeLong(tam);
                         dos.flush();
 
-                        sent += read;
+                        long sent = 0;
 
-                        int percent = (int) ((sent * 100) / tam);
+                        while(sent < tam){
+                            byte[] b = new byte[1500];
 
-                        System.out.println("Enviado el " + percent + "% del archivo");
+                            int read = dis.read(b);
+
+                            System.out.println("Enviados: " + read);
+
+                            dos.write(b, 0, read);
+                            dos.flush();
+
+                            sent += read;
+
+                            int percent = (int) ((sent * 100) / tam);
+
+                            System.out.println("Enviado el " + percent + "% del archivo");
+                        }
+
+                        System.out.println("Archivo enviado");
+
+                        dis.close();
                     }
 
-                    System.out.println("Archivo enviado");
-
-                    dis.close();
+                    System.out.println("Todos los archivos enviados");
                 }
-
-                System.out.println("Todos los archivos enviados");
-
             }
-            catch(Exception e){
-                e.printStackTrace();
+            catch(Exception e1){
+                e1.printStackTrace();
             }
+            
+            dos.close();
+            c.close();
+        }
+        catch(Exception e){
+            e.printStackTrace();
         }
     }
     
     
-    void recibirArchivosCliente(DataInputStream dis){
+    void recibirArchivosCliente(){
         try{
-            int left = 0;
-            String path = pathActualCliente() + "\\";
-            File carpeta = new File(path);
-            carpeta.mkdirs();
-            carpeta.setWritable(true);
             
-            while(left != 1){
-                
-                left = dis.readInt();
-                String relative_path = dis.readUTF();
-                long tam = dis.readLong();
-                
-                System.out.println("Quedan " + left + " archivos por recibir");
+            Socket c = new Socket("localhost", 1235);
+            DataInputStream dis = new DataInputStream(c.getInputStream());
+            
+            try{
+                int left = 0;
+                String path = pathActualCliente() + "\\";
+                File carpeta = new File(path);
+                carpeta.mkdirs();
+                carpeta.setWritable(true);
 
-                File destination_aux = new File(path + relative_path);
-                System.out.println("Sadsaddasdasdsadasdasd      " + destination_aux.getParent());
-                File destination = new File(destination_aux.getParent());
-                destination.mkdirs();
-                destination.setWritable(true);
-                
-                DataOutputStream dos = new DataOutputStream(new FileOutputStream(path + relative_path));
+                while(left != 1){
 
-                long received = 0;
+                    left = dis.readInt();
+                    String relative_path = dis.readUTF();
+                    long tam = dis.readLong();
 
-                while(received < tam){
-                    byte[] b = new byte[1500];
+                    System.out.println("Quedan " + left + " archivos por recibir");
 
-                    int read = dis.read(b);
-                    System.out.println("Leidos: " + read);
+                    File destination_aux = new File(path + relative_path);
+                    File destination = new File(destination_aux.getParent());
+                    destination.mkdirs();
+                    destination.setWritable(true);
 
-                    dos.write(b, 0, read);
-                    dos.flush();
+                    DataOutputStream dos = new DataOutputStream(new FileOutputStream(path + relative_path));
 
-                    received += read;
+                    long received = 0;
 
-                    int percent = (int)((received * 100) / tam);
+                    while(received < tam){
+                        byte[] b = new byte[1500];
 
-                    System.out.println("Recivido el " + percent + "% del archivo");
+                        int read = dis.read(b);
+                        System.out.println("Leidos: " + read);
+
+                        dos.write(b, 0, read);
+                        dos.flush();
+
+                        received += read;
+
+                        int percent = (int)((received * 100) / tam);
+
+                        System.out.println("Recivido el " + percent + "% del archivo");
+                    }
+
+                    dos.close();
                 }
-
-                dos.close();
-                
+            }
+            catch(Exception e1){
+                e1.printStackTrace();
             }
             
             System.out.println("Todos los archivos recividos");
+            
+            dis.close();
+            c.close();
         }
         catch(Exception e){
             e.printStackTrace();
@@ -217,7 +235,7 @@ public class ClienteHelper {
             dos.flush();
             
             if(ans == 1){
-                recibirArchivosCliente(dis);
+                recibirArchivosCliente();
             }
         }
         catch(Exception e){

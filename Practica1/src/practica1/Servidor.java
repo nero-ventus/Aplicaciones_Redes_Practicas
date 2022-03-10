@@ -28,7 +28,7 @@ public class Servidor {
                     opc = aux.recibirRespuesta(c1, dis, relative_path, dos);
                     
                     if(opc == 1){
-                        aux.recibirArchivosServidor(c1, dis, relative_path);
+                        aux.recibirArchivosServidor(relative_path);
                     }
                     else if(opc != 0){
                         relative_path = aux.darOpciones(opc, relative_path, dis, dos);

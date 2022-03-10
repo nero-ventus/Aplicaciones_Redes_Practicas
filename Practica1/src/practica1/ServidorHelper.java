@@ -5,6 +5,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -43,7 +44,7 @@ public class ServidorHelper {
         return opc;
     }
 
-    void recibirArchivosServidor(Socket c1, DataInputStream dis, String relative_path_server){
+    void recibirArchivosServidor(String relative_path_server){
         
         try{
             int left = 0;
@@ -52,45 +53,58 @@ public class ServidorHelper {
             carpeta.mkdirs();
             carpeta.setWritable(true);
             
-            while(left != 1){
-                
-                left = dis.readInt();
-                String relative_path = dis.readUTF();
-                long tam = dis.readLong();
-                
-                System.out.println("Quedan " + left + " archivos por recibir");
+            ServerSocket ss = new ServerSocket(1235);
+            ss.setReuseAddress(true);
+            Socket c = ss.accept();
+            DataInputStream dis = new DataInputStream(c.getInputStream());
+            
+            try{
+                while(left != 1){
 
-                File destination_aux = new File(path + relative_path);
-                System.out.println("Sadsaddasdasdsadasdasd      " + destination_aux.getParent());
-                File destination = new File(destination_aux.getParent());
-                destination.mkdirs();
-                destination.setWritable(true);
-                
-                DataOutputStream dos = new DataOutputStream(new FileOutputStream(path + relative_path));
+                    left = dis.readInt();
+                    String relative_path = dis.readUTF();
+                    long tam = dis.readLong();
 
-                long received = 0;
+                    System.out.println("Quedan " + left + " archivos por recibir");
 
-                while(received < tam){
-                    byte[] b = new byte[1500];
+                    File destination_aux = new File(path + relative_path);
+                    File destination = new File(destination_aux.getParent());
+                    destination.mkdirs();
+                    destination.setWritable(true);
 
-                    int read = dis.read(b);
-                    System.out.println("Leidos: " + read);
+                    DataOutputStream dos = new DataOutputStream(new FileOutputStream(path + relative_path));
 
-                    dos.write(b, 0, read);
-                    dos.flush();
+                    long received = 0;
 
-                    received += read;
+                    while(received < tam){
+                        byte[] b = new byte[1500];
 
-                    int percent = (int)((received * 100) / tam);
+                        int read = dis.read(b);
+                        System.out.println("Leidos: " + read);
 
-                    System.out.println("Recivido el " + percent + "% del archivo");
+                        dos.write(b, 0, read);
+                        dos.flush();
+
+                        received += read;
+
+                        int percent = (int)((received * 100) / tam);
+
+                        System.out.println("Recivido el " + percent + "% del archivo");
+                    }
+
+                    dos.close();
+
                 }
-
-                dos.close();
-                
+            }
+            catch(Exception e1){
+                e1.printStackTrace();
             }
             
             System.out.println("Todos los archivos recividos");
+            
+            dis.close();
+            c.close();
+            ss.close();
         }
         catch(Exception e){
             e.printStackTrace();
@@ -154,7 +168,7 @@ public class ServidorHelper {
         return answer;
     }
     
-    void enviarArchivoServidor(File[] container, DataOutputStream dos){
+    void enviarArchivoServidor(File[] container){
         File[] fs = getAllFiles(container);
 
         String parent_path = container[0].getParent();
@@ -163,53 +177,67 @@ public class ServidorHelper {
             return;
 
         try{
-            for(int i = 0; i <fs.length; i++){
-                File current_f = fs[i];
+            
+            ServerSocket ss = new ServerSocket(1235);
+            ss.setReuseAddress(true);
+            Socket c = ss.accept();
+            DataOutputStream dos = new DataOutputStream(c.getOutputStream());
+            
+            try{
+                for(int i = 0; i <fs.length; i++){
+                    File current_f = fs[i];
 
-                String name = current_f.getName();
-                long tam = current_f.length();
+                    String name = current_f.getName();
+                    long tam = current_f.length();
 
-                System.out.println("Se enviara el archivo " + name + " de " + tam + "bytes");
+                    System.out.println("Se enviara el archivo " + name + " de " + tam + "bytes");
 
-                DataInputStream dis = new DataInputStream(new FileInputStream(current_f));
+                    DataInputStream dis = new DataInputStream(new FileInputStream(current_f));
 
-                String path = current_f.getAbsolutePath();
-                String base = parent_path;
-                String relative = new File(base).toURI().relativize(new File(path).toURI()).getPath();
+                    String path = current_f.getAbsolutePath();
+                    String base = parent_path;
+                    String relative = new File(base).toURI().relativize(new File(path).toURI()).getPath();
 
-                dos.writeInt(fs.length - i);
-                dos.flush();
-                dos.writeUTF(relative);
-                dos.flush();
-                dos.writeLong(tam);
-                dos.flush();
-
-                long sent = 0;
-
-                while(sent < tam){
-                    byte[] b = new byte[1500];
-
-                    int read = dis.read(b);
-
-                    System.out.println("Enviados: " + read);
-
-                    dos.write(b, 0, read);
+                    dos.writeInt(fs.length - i);
+                    dos.flush();
+                    dos.writeUTF(relative);
+                    dos.flush();
+                    dos.writeLong(tam);
                     dos.flush();
 
-                    sent += read;
+                    long sent = 0;
 
-                    int percent = (int) ((sent * 100) / tam);
+                    while(sent < tam){
+                        byte[] b = new byte[1500];
 
-                    System.out.println("Enviado el " + percent + "% del archivo");
+                        int read = dis.read(b);
+
+                        System.out.println("Enviados: " + read);
+
+                        dos.write(b, 0, read);
+                        dos.flush();
+
+                        sent += read;
+
+                        int percent = (int) ((sent * 100) / tam);
+
+                        System.out.println("Enviado el " + percent + "% del archivo");
+                    }
+
+                    System.out.println("Archivo enviado");
+
+                    dis.close();
                 }
-
-                System.out.println("Archivo enviado");
-
-                dis.close();
+            }
+            catch(Exception e1){
+                e1.printStackTrace();
             }
 
             System.out.println("Todos los archivos enviados");
 
+            dos.close();
+            c.close();
+            ss.close();
         }
         catch(Exception e){
             e.printStackTrace();
@@ -236,7 +264,7 @@ public class ServidorHelper {
             if(ans == 1){
                 File[] container = new File[1];
                 container[0] = current_file;
-                enviarArchivoServidor(container, dos);
+                enviarArchivoServidor(container);
             }
             if(ans == 2){
                 System.out.println("Por eliminar");

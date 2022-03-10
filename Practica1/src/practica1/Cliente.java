@@ -2,9 +2,7 @@ package practica1;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.net.Socket;
-import javax.swing.JFileChooser;
 
 public class Cliente {
     
@@ -26,7 +24,7 @@ public class Cliente {
                 dos.flush();
                 
                 if(opcion == 1){
-                    aux.mandarArchivosCliente(c1, dos);
+                    aux.mandarArchivosCliente();
                 }
                 else if(opcion != 0){
                     aux.recibirOpciones(dis, dos);

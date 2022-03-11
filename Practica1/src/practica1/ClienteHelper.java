@@ -14,6 +14,102 @@ import javax.swing.JFileChooser;
 
 public class ClienteHelper {
     
+    void modificarConexion(DataInputStream dis, DataOutputStream dos){
+        
+        try{
+            Scanner sc = new Scanner(System.in);
+            String msj = "";
+            int ans = 0;
+            
+            for(int i = 0; i < 4 ; i++){
+                msj = dis.readUTF();
+                System.out.println(msj);
+
+                ans = Integer.parseInt(sc.nextLine());
+                dos.writeInt(ans);
+                dos.flush();
+            }
+        }
+        catch(Exception e){
+            //e.printStackTrace();
+        }
+        
+        return;
+    }
+    
+    void menuLocal(String relative_path){
+        File auxiliar = new File(pathActualCliente()+"\\"+ relative_path);
+        File[] listaArchivos = auxiliar.listFiles();
+
+        String menu = "Seleccione una opcion\nOpcion 0: Salir\n";
+
+        for(int i = 1; i < listaArchivos.length + 1; i++){
+            if(listaArchivos[i - 1].isFile())
+                menu += "Opcion "+ i +": "+ listaArchivos[i - 1].getName() + " -----> Archivo\n";
+            else
+                menu += "Opcion "+ i +": "+ listaArchivos[i - 1].getName() + " -----> Carpeta\n"; 
+        }
+        
+        System.out.println(menu);
+        
+        
+    }
+    
+    void eliminar(File current_file){
+        try{
+            System.out.println("Se eliminara " + current_file.getName());
+
+            if(!current_file.isFile()){
+                File[] listaArchivos = current_file.listFiles();
+
+                for(int i = 0; i < listaArchivos.length; i++){
+                    if(listaArchivos[i].isFile()){
+                        listaArchivos[i].delete();
+                    }
+                    else{
+                        eliminar(listaArchivos[i]);
+                    }
+                }
+            }
+
+            System.out.println("Eliminado " +current_file.delete());
+        
+        }
+        catch(Exception e){
+            //e.printStackTrace();
+        }
+        
+        return;
+    }
+    
+    String opcionesLocales(String relative_path, int opc){
+        File auxiliar = new File(pathActualCliente()+"\\"+ relative_path);
+        File[] listaArchivos = auxiliar.listFiles();
+        File current_file = listaArchivos[opc - 1];
+
+        String msj = "Que quieres hacer?\n0 Nada\n1 Eliminar\n";
+
+        if(!current_file.isFile()){
+            msj += "2 Entrar\n";
+        }
+        
+        System.out.println(msj);
+        
+        Scanner sc = new Scanner(System.in);
+        int ans = Integer.parseInt(sc.nextLine());
+        
+        if(ans == 1){
+            System.out.println("Por eliminar");
+            eliminar(current_file);
+            System.out.println("Eliminado");
+        }
+        if(ans == 2){
+            relative_path += current_file.getName() + "\\";
+        }
+        
+        return relative_path;
+    }
+    
     String pathActualCliente(){
         File f = new File("");
         return f.getAbsolutePath() + "\\Archivos_Cliente";
@@ -48,7 +144,7 @@ public class ClienteHelper {
         return answer;
     }
     
-    int menu(Socket c1, DataInputStream dis){
+    int menu(DataInputStream dis){
         int opc = -1;
 
         try {
@@ -64,7 +160,7 @@ public class ClienteHelper {
         }
         catch(Exception e){
             //return menu(c1, dis);
-            e.printStackTrace();
+            //e.printStackTrace();
         }
 
         return opc;
@@ -83,9 +179,7 @@ public class ClienteHelper {
                 jfc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
                 jfc.setMultiSelectionEnabled(true);
                 jfc.getActionMap().get("viewTypeDetails").actionPerformed(null);
-                System.out.println("A4644");
                 int r = jfc.showOpenDialog(null);
-                System.out.println("A4644");
                 jfc.setRequestFocusEnabled(true);
 
                 if(r == JFileChooser.APPROVE_OPTION){
@@ -147,17 +241,16 @@ public class ClienteHelper {
                 }
             }
             catch(Exception e1){
-                e1.printStackTrace();
+                //e1.printStackTrace();
             }
             
             dos.close();
             c.close();
         }
         catch(Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
-    }
-    
+    } 
     
     void recibirArchivosCliente(){
         try{
@@ -209,7 +302,7 @@ public class ClienteHelper {
                 }
             }
             catch(Exception e1){
-                e1.printStackTrace();
+                //e1.printStackTrace();
             }
             
             System.out.println("Todos los archivos recividos");
@@ -218,7 +311,7 @@ public class ClienteHelper {
             c.close();
         }
         catch(Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
     
@@ -239,7 +332,7 @@ public class ClienteHelper {
             }
         }
         catch(Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }                
     }
 }

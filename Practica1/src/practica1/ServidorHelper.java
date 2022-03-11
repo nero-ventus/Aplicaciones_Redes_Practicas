@@ -13,12 +13,62 @@ import java.util.Queue;
 
 public class ServidorHelper {
     
+    private Socket last_config;
+    
+    Socket modificarConexion(Socket c1, DataInputStream dis, DataOutputStream dos){
+        this.last_config = c1;
+        
+        try{
+            dos.writeUTF("Desea habilitar el algoritmo de Nagle?\n1 Si\n2 No\n");
+            dos.flush();
+            
+            int ans = dis.readInt();
+            
+            if(ans == 1)
+                c1.setTcpNoDelay(true);
+            else
+                c1.setTcpNoDelay(false);
+            
+            dos.writeUTF("Escriba el tamaño del buffer de escritura o -1 si no desea cambiarlo\n");
+            dos.flush();
+            
+            ans = dis.readInt();
+            
+            if(ans > 0)
+                c1.setSendBufferSize(ans);
+            
+            dos.writeUTF("Escriba el tamaño del buffer de lectura o -1 si no desea cambiarlo\n");
+            dos.flush();
+            
+            ans = dis.readInt();
+            
+            if(ans > 0)
+                c1.setReceiveBufferSize(ans);
+            
+            dos.writeUTF("Escriba el tiempo del temporalizador o -1 si no desea cambiarlo\n");
+            dos.flush();
+            
+            ans = dis.readInt();
+            
+            if(ans > 0)
+                c1.setSoTimeout(ans);
+            
+        }
+        catch(Exception e){
+            //e.printStackTrace();
+        }
+        
+        this.last_config = c1;
+        
+        return this.last_config;
+    }
+    
     String pathActualServidor(){
         File f = new File("");
         return f.getAbsolutePath() + "\\Archivos_Servidor\\";
     }
     
-    int recibirRespuesta(Socket c1, DataInputStream dis, String relative_path, DataOutputStream dos){
+    int recibirRespuesta(DataInputStream dis, String relative_path, DataOutputStream dos){
         
         int opc = 0;
         try{
@@ -26,10 +76,13 @@ public class ServidorHelper {
             File auxiliar = new File(pathActualServidor() + relative_path);
             File[] listaArchivos = auxiliar.listFiles();
 
-            String menu = "Seleccione una opcion\nOpcion 0: Salir\nOpcion 1: Subir archivos\n";
+            String menu = "Seleccione una opcion\nOpcion 0: Salir\nOpcion 1: Modificar conexion\nOpcion 2: Subir archivos\n";
 
-            for(int i=2; i<listaArchivos.length+2; i++){
-                menu += "Opcion "+ i +": "+ listaArchivos[i - 2].getName() + "\n";
+            for(int i = 3; i<listaArchivos.length + 3; i++){
+                if(listaArchivos[i - 3].isFile())
+                    menu += "Opcion "+ i +": "+ listaArchivos[i - 3].getName() + " -----> Archivo\n";
+                else
+                    menu += "Opcion "+ i +": "+ listaArchivos[i - 3].getName() + " -----> Carpeta\n"; 
             }
             
             dos.writeUTF(menu);
@@ -38,7 +91,7 @@ public class ServidorHelper {
             opc = dis.readInt();
         }
         catch(Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         
         return opc;
@@ -97,7 +150,7 @@ public class ServidorHelper {
                 }
             }
             catch(Exception e1){
-                e1.printStackTrace();
+                //e1.printStackTrace();
             }
             
             System.out.println("Todos los archivos recividos");
@@ -107,7 +160,7 @@ public class ServidorHelper {
             ss.close();
         }
         catch(Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
     
@@ -133,7 +186,7 @@ public class ServidorHelper {
         
         }
         catch(Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         
         return;
@@ -230,7 +283,7 @@ public class ServidorHelper {
                 }
             }
             catch(Exception e1){
-                e1.printStackTrace();
+                //e1.printStackTrace();
             }
 
             System.out.println("Todos los archivos enviados");
@@ -240,14 +293,14 @@ public class ServidorHelper {
             ss.close();
         }
         catch(Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
     
     String darOpciones(int opc, String relative_path, DataInputStream dis, DataOutputStream dos){
         File auxiliar = new File(pathActualServidor() + relative_path);
         File[] listaArchivos = auxiliar.listFiles();
-        File current_file = listaArchivos[opc - 2];
+        File current_file = listaArchivos[opc - 3];
         
         String msj = "Que quieres hacer?\n1 Descargar\n2 Eliminar\n";
         
@@ -276,7 +329,7 @@ public class ServidorHelper {
             }
         }
         catch(Exception e){
-            e.getStackTrace();
+            //e.getStackTrace();
         }
         
         return relative_path;

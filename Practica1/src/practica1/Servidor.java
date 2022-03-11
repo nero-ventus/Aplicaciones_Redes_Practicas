@@ -25,9 +25,12 @@ public class Servidor {
                 String relative_path = "";
                 
                 while(opc != 0){
-                    opc = aux.recibirRespuesta(c1, dis, relative_path, dos);
+                    opc = aux.recibirRespuesta(dis, relative_path, dos);
                     
                     if(opc == 1){
+                        c1 = aux.modificarConexion(c1, dis, dos);
+                    }
+                    else if(opc == 2){
                         aux.recibirArchivosServidor(relative_path);
                     }
                     else if(opc != 0){
@@ -61,8 +64,8 @@ public class Servidor {
             }
         }
         catch(Exception e){
-            System.out.println(e.getMessage());
-            e.printStackTrace();
+            //System.out.println(e.getMessage());
+            //e.printStackTrace();
         }
     }
 }

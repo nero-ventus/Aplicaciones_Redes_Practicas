@@ -7,6 +7,107 @@ public class ServidorHelper {
     private String[] words = {"hola", "adios", "dia", "noche", "amor", "odio",
         "anime", "manga", "computadora", "celular", "familia", "amigos", "musica", "silencio", "redes"};
     
+    int[] answerToIntArray(String answer){
+        int[] converted = new int[4];
+        
+        int current_part = 0;
+        for(int i = 0; i < answer.length(); i++){
+            String container = "";
+            int j = i;
+            
+            while(j < answer.length() && answer.charAt(j) != ' '){
+                container += answer.charAt(j);
+                j++;
+            }
+            
+            i = j;
+            
+            converted[current_part] = Integer.parseInt(container);
+            current_part++;
+        }
+        
+        return converted;
+    }
+    
+    int[][] marker(int[][] marked, String ans){
+        int[] coverted = answerToIntArray(ans);
+        
+        int direction = coverted[2];
+        int vertical_move = 0;
+        int horizontal_move = 0;
+        
+        if(direction == 0){
+            vertical_move = 1;
+            horizontal_move = 0;
+        }
+        else if(direction == 1){
+            vertical_move = 1;
+            horizontal_move = 1;
+        }
+        else if(direction == 2){
+            vertical_move = 0;
+            horizontal_move = 1;
+        }
+        else if(direction == 3){
+            vertical_move = -1;
+            horizontal_move = 1;
+        }
+        else if(direction == 4){
+            vertical_move = -1;
+            horizontal_move = 0;
+        }
+        else if(direction == 5){
+            vertical_move = -1;
+            horizontal_move = -1;
+        }
+        else if(direction == 6){
+            vertical_move = 0;
+            horizontal_move = -1;
+        }
+        else if(direction == 7){
+            vertical_move = 1;
+            horizontal_move = -1;
+        }
+        
+        
+        for(int i = coverted[0], j = coverted[1], k = 0; i < 16 && j < 16 && k < coverted[3];
+                i += vertical_move, j += horizontal_move, k++){
+            marked[i][j] = 1;
+        }
+        
+        return marked;
+    }
+    
+    boolean checkAnswer(String[] solutions, String answer){
+        for(int i = 0; i < solutions.length; i++)
+            if(answer.equals(solutions[i]))
+                return true;
+        return false;
+    }
+    
+    String letterSoupToString(char[][] letterSoup, int[][] marked, int score){
+        String ans = "\t0\t1\t2\t3\t4\t5\t6\t7\t8\t9\t10\t11\t12\t13\t14\t15\n";
+        for(int i = 0; i < 16; i++){
+            
+            ans += i + "\t";
+            
+            for(int j = 0; j < 16; j++){
+                
+                if(marked[i][j] == 1)
+                    ans += Character.toUpperCase(letterSoup[i][j]) + "\t";
+                else
+                    ans += letterSoup[i][j] + "\t";
+            }
+            ans += "\n";
+        }
+        
+        ans += "Palabras encontradas " + score + "\nIntroduzca las coordenadas de la casilla de inicio de la palabra (fila y columna), el numero que represeta su direccion\n"
+                + "0 ↓\t1 ↘\t2 →\t3 ↗\t4 ↑\t5 ↖\t6 ←\t7 ↙"
+                + "\ny la longitud de la palabra encontrada.\nEj:\n0 5 1 4\n";
+        
+        return ans;
+    }
+    
     boolean checkWordFit(String word, char[][] letterSoup, int[][] visited, int x, int y, int direction){
         int vertical_move = 0;
         int horizontal_move = 0;
@@ -46,7 +147,7 @@ public class ServidorHelper {
         
         int k = 0;
         for(int i = x, j = y; i >= 0 && i < 16 && j >= 0 && j < 16 && k < word.length();
-                i += horizontal_move, j += vertical_move, k++){
+                i += vertical_move, j += horizontal_move, k++){
             if(visited[i][j] == 1 && letterSoup[i][j] != word.charAt(k))
                 return false;
         }
@@ -109,14 +210,14 @@ public class ServidorHelper {
 
                             int z = 0;
                             for(int x = j, y = k; x >= 0 && x < 16 && y >= 0 && y < 16 && z < this.words[i].length();
-                                    x += horizontal_move, y += vertical_move, z++){
+                                    x += vertical_move, y += horizontal_move, z++){
                                 visited[x][y] = 1;
                                 letterSoup[x][y] = this.words[i].charAt(z);
                             }
                             
                             flag = 0;
                             
-                            solutions[i] = "" + j + "" + "" + k + "" + "" + direction + "" + "" + this.words[i].length() + "";
+                            solutions[i] = "" + j + " " + k + " " + direction + " " + this.words[i].length() + "";
                             
                             break;
                         }

@@ -1,11 +1,32 @@
 package practica2;
 
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.Random;
 import javafx.util.Pair;
 
 public class ServidorHelper {
-    private String[] words = {"hola", "adios", "dia", "noche", "amor", "odio",
-        "anime", "manga", "computadora", "celular", "familia", "amigos", "musica", "silencio", "redes"};
+    private String[] words /*= {"usb", "mouse", "ventilador", "ram", "monitor", "teclado", "procesador", "memoria",
+        "laptop", "diskette", "bocina", "audifonos", "motherboard", "fuente", "gabinete"}*/;
+
+    public ServidorHelper() {
+        try{
+            File aux_path = new File("");
+            List<String> container = Files.readAllLines(Paths.get(aux_path.getAbsolutePath() + "\\words.txt"),
+                    StandardCharsets.UTF_8);
+            
+            words = new String[container.size()];
+            
+            for(int i = 0; i < container.size(); i++)
+                words[i] = container.get(i);
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+    }
     
     int[] answerToIntArray(String answer){
         int[] converted = new int[4];
@@ -85,8 +106,38 @@ public class ServidorHelper {
         return false;
     }
     
-    String letterSoupToString(char[][] letterSoup, int[][] marked, int score){
-        String ans = "\t0\t1\t2\t3\t4\t5\t6\t7\t8\t9\t10\t11\t12\t13\t14\t15\n";
+    String letterSoupToString(char[][] letterSoup, int[][] marked, int score, int dificulty, int errors){
+        String ans = "";
+        
+        if(dificulty == 0){
+            ans += "Dificultad: Facil\nEncontrar:\n";
+            for(int i = 0; i < this.words.length;){
+                for(int j = 0; j < 3 && i < this.words.length; j++, i++)
+                    ans += this.words[i] + "\t";
+                ans += "\n";
+            }
+        }
+        else if(dificulty == 1){
+            ans += "Dificultad: Media\nEncontrar:\n";
+            for(int i = 0; i < this.words.length;){
+                for(int j = 0; j < 3 && i < this.words.length; j++, i++){
+                    for(int k = 0; k < errors && k < this.words[i].length(); k++)
+                        ans += this.words[i].charAt(k);
+                    ans += "\t";
+                }
+                ans += "\n";
+            }
+        }
+        else if(dificulty == 2){
+            ans += "Dificultad: Dificil\nEncontrar:\n";
+            for(int i = 0; i < this.words.length;){
+                for(int j = 0; j < 3 && i < this.words.length; j++, i++)
+                    ans += this.words[i].length() + "\t";
+                ans += "\n";
+            }
+        }
+        
+        ans += "Sopa de Letras\n\t0\t1\t2\t3\t4\t5\t6\t7\t8\t9\t10\t11\t12\t13\t14\t15\n";
         for(int i = 0; i < 16; i++){
             
             ans += i + "\t";

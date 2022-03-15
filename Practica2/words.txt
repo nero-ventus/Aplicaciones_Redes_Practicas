@@ -1,0 +1,15 @@
+usb
+mouse
+ventilador
+ram
+monitor
+teclado
+procesador
+memoria
+laptop
+diskette
+bocina
+audifonos
+motherboard
+fuente
+gabinete

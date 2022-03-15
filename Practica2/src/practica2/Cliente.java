@@ -9,15 +9,26 @@ public class Cliente {
 
     public static void main(String[] args) {
         try {
-            DatagramSocket ds = new DatagramSocket();
             Scanner sc = new Scanner(System.in);
+            System.out.println("Escriba la direccion IP a conectarse o 0 para la predeterminada");
+            String ip = sc.nextLine();
             
-            int pto = 1234;
-            InetAddress dst= InetAddress.getLocalHost();
+            System.out.println("Escriba el puerto conectarse");
+            int pto = Integer.parseInt(sc.nextLine());
+            
+            
+            InetAddress dst;
+            
+            if(ip.equals("0"))
+                dst = InetAddress.getLocalHost();
+            else
+                dst = InetAddress.getByName(ip);
+            
+            DatagramSocket ds = new DatagramSocket();
             
             String confirmation = "1";
             byte[] b = confirmation.getBytes();
-            DatagramPacket p=new DatagramPacket(b,b.length,dst,pto);
+            DatagramPacket p = new DatagramPacket(b, b.length, dst, pto);
             ds.send(p);
             
             System.out.println("Conexion con el servidor establecida\nIniciando el juego");

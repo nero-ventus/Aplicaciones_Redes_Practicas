@@ -303,7 +303,24 @@ public class Manejador extends Thread {
                         socket.close();
                     }
                     catch(Exception e){
-                            e.printStackTrace();
+                        
+                        StringBuffer respuesta = new StringBuffer();
+                        respuesta.append("HTTP/1.1 500 Error \n");
+                        respuesta.append("Server: Rangel_Vera Server/1.1 \n");
+                        String fecha = "Date: " + new Date()+" \n";
+                        respuesta.append(fecha);
+                        String tipo_mime = "Content-Type: text/html \n\n";
+                        respuesta.append(tipo_mime);
+                        
+                        try{
+                            dos = new DataOutputStream(socket.getOutputStream());
+                            dos.write(respuesta.toString().getBytes());
+                            dos.flush();
+                            dos.close();
+                        }
+                        catch(Exception ex){
+                            
+                        }
                     }
                 }
                 public void getArch(String line){

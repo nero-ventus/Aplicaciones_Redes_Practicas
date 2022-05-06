@@ -31,7 +31,6 @@ public class GUI extends JFrame implements ActionListener {
     private JTextArea servidores_activos;
     private JTextArea archivos_descargados;
     private JTextArea resultados_busqueda;
-    private JTextField numero_descargar;
     private JButton boton_descargar;
     private JPanel Lamina_Sup;
     private JPanel Lamina_inf;
@@ -43,6 +42,7 @@ public class GUI extends JFrame implements ActionListener {
     private boolean flag_flujo;
     InetAddress gpo;
     MulticastSocket cl;
+    private String ultima_busqueda = "";
 
     public GUI() {
 
@@ -81,9 +81,6 @@ public class GUI extends JFrame implements ActionListener {
         this.boton_buscar.addActionListener(this);
         this.Lamina_inf.add(this.boton_buscar);
 
-        this.numero_descargar = new JTextField(10);
-        this.Lamina_inf.add(this.numero_descargar);
-
         this.boton_descargar = new JButton("Descargar");
         this.boton_descargar.addActionListener(this);
         this.Lamina_inf.add(this.boton_descargar);
@@ -93,6 +90,38 @@ public class GUI extends JFrame implements ActionListener {
 iniciaClienteMulticast();
         RMIHelper rmiaux = new RMIHelper();
         rmiaux.iniciaServerRMI();
+        
+        try{
+            Thread descargas = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try{
+                        while(true){
+                            File aux = new File("descargas");
+
+                            File[] archivos = aux.listFiles();
+
+                            String lista = "Archivos descargados\n";
+
+                            for(int i = 0; i < archivos.length; i++)
+                                if(archivos[i].isFile())
+                                    lista = lista.concat(archivos[i].getName() + "\n");
+
+                            archivos_descargados.setText(lista);
+                            Thread.sleep(500);
+                        }
+                    }
+                    catch(Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            });
+            descargas.start();
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+        
     }
 
     String pathActualCliente() {
@@ -149,7 +178,7 @@ iniciaClienteMulticast();
                     dos.close();
                 }
             } catch (Exception e1) {
-                //e1.printStackTrace();
+                e1.printStackTrace();
             }
 
             System.out.println("Todos los archivos recividos");
@@ -157,7 +186,7 @@ iniciaClienteMulticast();
             dis.close();
             c.close();
         } catch (Exception e) {
-            //e.printStackTrace();
+            e.printStackTrace();
         }
     }
 
@@ -186,11 +215,9 @@ iniciaClienteMulticast();
 
                     DataInputStream dis = new DataInputStream(new FileInputStream(current_f));
 
-                    String relative = "";
-
                     dos.writeInt(fs.length - i);
                     dos.flush();
-                    dos.writeUTF(relative);
+                    dos.writeUTF(name);
                     dos.flush();
                     dos.writeLong(tam);
                     dos.flush();
@@ -219,7 +246,7 @@ iniciaClienteMulticast();
                     dis.close();
                 }
             } catch (Exception e1) {
-                //e1.printStackTrace();
+                e1.printStackTrace();
             }
 
             System.out.println("Todos los archivos enviados");
@@ -228,7 +255,7 @@ iniciaClienteMulticast();
             c.close();
             ss.close();
         } catch (Exception e) {
-            //e.printStackTrace();
+            e.printStackTrace();
         }
     }
 
@@ -268,12 +295,14 @@ iniciaClienteMulticast();
 
                         cl.receive(p);
                         String puertosTexto = new String(p.getData(), 0, p.getLength());
+                        System.out.println("Recibido:" + puertosTexto + " " + p.getPort());
                         if (puertosTexto != null) {
                             if (!puertosTexto.equals("1")) {
                                 servidores_activos.setText(puertosTexto);
                             } else {
                                 cl.receive(p);
                                 String nombre_buscar = new String(p.getData(), 0, p.getLength());
+                                System.out.println("Archivo a buscar:" + nombre_buscar);
                                 File aux = new File("archivos_servidor");
 
                                 File[] archivos = aux.listFiles();
@@ -284,6 +313,7 @@ iniciaClienteMulticast();
                                     for (int i = 0; i < archivos.length; i++) {
                                         if (archivos[i].getName().contains(nombre_buscar)) {
                                             filtrados.add(archivos[i]);
+                                            System.out.println(archivos[i].getName());
                                         }
                                     }
                                 }
@@ -308,15 +338,14 @@ iniciaClienteMulticast();
                 try {
                     while (true) {
                         if (!flag_flujo) {
-                            String mensaje = "0";
 
-                            enviaMensaje(mensaje.getBytes());
+                            enviaMensaje("0".getBytes());
 
                             Thread.sleep(1000);
                         } else {
                             flag_flujo = false;
                             enviaMensaje("1".getBytes());
-                            enviaMensaje(nombre_busqueda.getText().getBytes());
+                            enviaMensaje(ultima_busqueda.getBytes());
                         }
                     }
                 } catch (Exception e) {
@@ -346,6 +375,7 @@ iniciaClienteMulticast();
             if (e.getSource() == boton_buscar) {
                 RMIHelper rmiaux = new RMIHelper();
                 resultados_busqueda.setText("Resultados de la busqueda:\n" + rmiaux.clienteRMI(nombre_busqueda.getText()));
+                ultima_busqueda = nombre_busqueda.getText();
                 nombre_busqueda.setText("");
             } else if (e.getSource() == boton_descargar) {
                 this.flag_flujo = true;

@@ -65,7 +65,8 @@ public class multicastServer {
 
                             while (e.hasMoreElements()) {
                                 int puerto = e.nextElement();
-                                enviaMensaje(codigo.getBytes(), puerto);
+                                System.out.println("Envia A");
+                                enviaMensaje("1".getBytes(), puerto);
                                 enviaMensaje(nombre_buscar.getBytes(), puerto);
                             }
                         }
@@ -97,6 +98,7 @@ public class multicastServer {
 
                         Enumeration<Integer> e = puertos_conectados.keys();
 
+                        System.out.println("Envia B " + mensaje);
                         while (e.hasMoreElements()) {
                             int puerto = e.nextElement();
                             enviaMensaje(mensaje.getBytes(), puerto);

@@ -12,8 +12,8 @@ public class RMIHelper implements Buscador{
             System.out.println("RMI registry ready.");
 	}
         catch(Exception e) {
-            System.out.println("Exception starting RMI registry:");
-            e.printStackTrace();
+            //System.out.println("Exception starting RMI registry:");
+            //e.printStackTrace();
 	  }
 	
 	try{
@@ -30,8 +30,8 @@ public class RMIHelper implements Buscador{
 	    System.out.println("Servidor listo...");
             
 	} catch (Exception e) {
-	    System.err.println("Server exception: " + e.toString());
-	    e.printStackTrace();
+	    //System.err.println("Server exception: " + e.toString());
+	    //e.printStackTrace();
 	}
     }
     
@@ -45,7 +45,7 @@ public class RMIHelper implements Buscador{
             return response;
 	}
         catch (Exception e) {
-	    e.printStackTrace();
+	    //e.printStackTrace();
 	}
         return "";
     }
@@ -68,7 +68,7 @@ public class RMIHelper implements Buscador{
             }
         }
         catch(Exception e){
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         
         return "-1";
